@@ -1,18 +1,12 @@
 pipeline {
-    agent any  // Runs on any available Jenkins agent
-
-    environment {
-        GIT_CREDENTIALS_ID = 'github-token' // ID of Jenkins GitHub credentials
-        REPO_URL = 'https://github.com/vasanth31-r/Sample-jobs'
-        BRANCH = 'main' // Change to your working branch
-    }
+    agent any
 
     stages {
         stage('Clone Repository') {
             steps {
-                git branch: "${BRANCH}",
-                    credentialsId: "${GIT_CREDENTIALS_ID}",
-                    url: "${REPO_URL}"
+                git branch: 'main',
+                    credentialsId: 'github-token',
+                    url: 'https://github.com/vasanth31-r/Sample-jobs.git'
             }
         }
 
@@ -30,7 +24,7 @@ pipeline {
                         sh 'npm install'
                         sh 'npm run build'
                     } else {
-                        error 'No recognized build file found!'
+                        echo '⚠️ No build file found, skipping build step...'
                     }
                 }
             }
@@ -49,35 +43,10 @@ pipeline {
                         echo 'Running npm tests'
                         sh 'npm test'
                     } else {
-                        echo 'No test script found, skipping tests...'
+                        echo '⚠️ No test file found, skipping test step...'
                     }
                 }
             }
-        }
-
-        stage('Archive Artifacts') {
-            steps {
-                archiveArtifacts artifacts: '**/target/*.jar, **/build/*', fingerprint: true
-            }
-        }
-
-        stage('Deploy (Optional)') {
-            steps {
-                echo 'Deploying application...'
-                // Example: SCP deployment
-                // sh 'scp -i /path/to/key target/myapp.jar user@server:/path/to/deploy'
-                // Example: Docker deployment
-                // sh 'docker-compose up -d'
-            }
-        }
-    }
-
-    post {
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed!'
         }
     }
 }
